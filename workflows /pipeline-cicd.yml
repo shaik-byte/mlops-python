@@ -2,9 +2,8 @@ name: Python CI
 
 on:
   push:
-    branches: [ Mlops ]
-  pull_request:
-    branches: [ main ]
+    branches: Mlops 
+  
 
 jobs:
   build:
