@@ -23,5 +23,5 @@ predictions = rf_classifier.predict(X_test)
 
 # Calculating the accuracy of the model
 accuracy = accuracy_score(y_test, predictions)
-print("Accuracy:", accuracy)
+# print("Accuracy:", accuracy)
 
