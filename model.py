@@ -1,27 +1,27 @@
 # Importing necessary libraries
-import numpy as np
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
-# Load the Breast Cancer dataset
-cancer = load_breast_cancer()
-X = cancer.data
-y = cancer.target
+# Load the Iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
 
 # Splitting the dataset into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Initializing the Logistic Regression model
-logistic_reg = LogisticRegression()
+# Initializing the RandomForestClassifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 
-# Training the model
-logistic_reg.fit(X_train, y_train)
+# Training the classifier
+rf_classifier.fit(X_train, y_train)
 
 # Making predictions on the test set
-predictions = logistic_reg.predict(X_test)
+predictions = rf_classifier.predict(X_test)
 
 # Calculating the accuracy of the model
 accuracy = accuracy_score(y_test, predictions)
 # print("Accuracy:", accuracy)
+
