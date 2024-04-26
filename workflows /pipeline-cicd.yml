@@ -1,1 +1,162 @@
-hi
+name: Django-pipeline
+
+on:
+  push:
+    branches:
+      - Mlops
+    tags:
+      - '*'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          echo "--------------installing the requirements-------------------------"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+  test:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    needs: compile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install Bandit
+        run: |
+          pip install bandit
+
+      - name: Run Bandit
+        run: |
+          bandit -r .
+        continue-on-error: true
+        
+      - name: Install Safety
+        run: |
+          pip install safety
+
+      - name: Run Safety
+        run: |
+          safety check --full-report
+      
+      - name: Install dependencies
+        run: pip install flake8 coverage
+
+      - name: Run Flake8
+        run: |
+          flake8 .
+        continue-on-error: true
+
+      - name: Run Coverage
+        run: |
+          pip install pytest
+          coverage run --source=. -m pytest
+        continue-on-error: true
+
+      - name: Generate Coverage Report
+        run: |
+          coverage report -m
+
+  Image-build-and-push:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    # if: startsWith(github.ref, 'refs/tags/')
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Docker image
+        
+        env:
+          runs-on: ubuntu-latest
+          DOCKER_USERNAME: "user_name"
+          DOCKER_PASSWORD: "password"
+          TAG: ${{ github.sha }}
+        
+        run: |
+          docker build -t first-image .
+          docker image ls
+          docker tag first-image shaikbyte/django-ecommer:1
+          # wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          # echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.18.3/trivy_0.18.3_Linux-64bit.deb
+          sudo dpkg -i trivy_0.18.3_Linux-64bit.deb
+          sudo apt-get update
+          sudo apt-get install -y trivy
+          # trivy image first-image
+         # echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+         # docker tag shaik shaikbyte/django-ecommer:${TAG}
+         # docker push shaikbyte/django-ecommer:1
+  
+  Create-Helm-Chart:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    needs:  Image-build-and-push
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: 'latest'
+
+      - name: Package Helm Chart
+        run: |
+          helm create mychart  # Create a new Helm chart directory
+          mv kubernetes/* mychart/templates/  # Move your Kubernetes manifest files into the templates directory
+          helm package mychart/  # Package the Helm chart
+
+      - name: helm-push
+        run: |
+          echo "helm push"
+      
+  dev-deployment:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    needs: Create-Helm-Chart
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: helm pull
+        run: |
+         echo "pulling the helm charts"
+      - name: k8s dev deployment
+        run: |
+         echo "helm apply"
+
+  health-check:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
+    needs:  dev-deployment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: health check for dev
+        run: |
+         echo "curl -w https://www.kubernetes.com"
+      
