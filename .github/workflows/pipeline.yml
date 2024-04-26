@@ -1,39 +1,26 @@
-name: ML Model Training and Evaluation
+# Importing necessary libraries
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
-on:
-  push:
-    branches:
-      - ops  # Adjust the branch name as needed
-  pull_request:
-    branches:
-      - ops  # Adjust the branch name as needed
+# Load the Iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# Splitting the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+# Initializing the RandomForestClassifier
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'  # Choose Python version based on your requirement
+# Training the classifier
+rf_classifier.fit(X_train, y_train)
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy
-        pip install scipy --only-binary numpy
-        pip list
-        pip show numpy
-        python -m pip install --upgrade setuptools
-        pip install -r requirements.txt  # Adjust if you have a requirements file
-        
+# Making predictions on the test set
+predictions = rf_classifier.predict(X_test)
 
-    - name: Train and evaluate model
-      run: |
-        python model.py  # Replace with the filename of your Python script
-
-    # You can add more steps here for additional actions like model deployment, testing, etc.
+# Calculating the accuracy of the model
+accuracy = accuracy_score(y_test, predictions)
+print("Accuracy:", accuracy)
