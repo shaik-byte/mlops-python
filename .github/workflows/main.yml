@@ -1,0 +1,33 @@
+name: ML Model Training and Evaluation
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+  pull_request:
+    branches:
+      - main  # Adjust the branch name as needed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'  # Choose Python version based on your requirement
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Adjust if you have a requirements file
+
+    - name: Train and evaluate model
+      run: |
+        python your_script.py  # Replace with the filename of your Python script
+
+    # You can add more steps here for additional actions like model deployment, testing, etc.
