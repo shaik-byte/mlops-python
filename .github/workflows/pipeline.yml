@@ -3,10 +3,10 @@ name: ML Model Training and Evaluation
 on:
   push:
     branches:
-      - main  # Adjust the branch name as needed
+      - ops  # Adjust the branch name as needed
   pull_request:
     branches:
-      - main  # Adjust the branch name as needed
+      - ops  # Adjust the branch name as needed
 
 jobs:
   build:
@@ -28,6 +28,6 @@ jobs:
 
     - name: Train and evaluate model
       run: |
-        python your_script.py  # Replace with the filename of your Python script
+        python model.py  # Replace with the filename of your Python script
 
     # You can add more steps here for additional actions like model deployment, testing, etc.
